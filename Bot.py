@@ -1,4 +1,3 @@
-requirements.txt
 import os
 import google.generativeai as genai
 from telegram import Update
@@ -13,9 +12,7 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 
 async def cevap_ver(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mesaj = update.message.text
-
     cevap = model.generate_content(mesaj)
-
     await update.message.reply_text(cevap.text)
 
 app = Application.builder().token(TELEGRAM_TOKEN).build()
