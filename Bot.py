@@ -21,6 +21,6 @@ app.add_handler(
     MessageHandler(filters.TEXT & ~filters.COMMAND, cevap_ver)
 )
 
-print("Bot aktif!")
+prinprint("Bot aktif ve polling başladı!")
 
 app.run_polling()
