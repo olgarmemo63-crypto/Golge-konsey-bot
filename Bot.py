@@ -1,33 +1,45 @@
 import os
-from google import genai
+import requests
 from telegram import Update
 from telegram.ext import Application, MessageHandler, ContextTypes, filters
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+API_KEY = os.getenv("GEMINI_API_KEY")
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 
 async def cevap_ver(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    mesaj = update.message.text
+
+    veri = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": mesaj
+                    }
+                ]
+            }
+        ]
+    }
+
     try:
-        mesaj = update.message.text
+        r = requests.post(URL, json=veri, timeout=30)
+        r.raise_for_status()
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=mesaj
-        )
+        cevap = r.json()["candidates"][0]["content"]["parts"][0]["text"]
 
-        await update.message.reply_text(response.text)
+        await update.message.reply_text(cevap)
 
     except Exception as e:
-        await update.message.reply_text(f"Hata oluştu:\n{e}")
+        await update.message.reply_text(f"Hata:\n{e}")
 
-app = Application.builder().token(TELEGRAM_TOKEN).build()
+app = Application.builder().token(TOKEN).build()
 
 app.add_handler(
     MessageHandler(filters.TEXT & ~filters.COMMAND, cevap_ver)
 )
 
-print("🤖 Gölge Konsey Bot aktif!")
+print("Bot çalışıyor...")
 
 app.run_polling()
